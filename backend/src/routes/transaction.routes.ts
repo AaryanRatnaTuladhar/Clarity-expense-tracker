@@ -1,19 +1,38 @@
 import express, { Response } from 'express';
 import Transaction from '../models/Transaction';
 import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { categorizeTransaction } from '../services/ai';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateToken);
 
+// POST /api/transactions/suggest-category - AI suggest category (NEW!)
+router.post('/suggest-category', async (req: AuthRequest, res: Response) => {
+  try {
+    const { description, amount, type } = req.body;
+
+    if (!description || !type) {
+      return res.status(400).json({ error: 'Description and type are required' });
+    }
+
+    console.log(`AI categorizing: "${description}"`);
+    const suggestedCategory = await categorizeTransaction(description, amount || 0, type);
+
+    res.json({ category: suggestedCategory });
+  } catch (error: any) {
+    console.error('Error suggesting category:', error);
+    res.status(500).json({ error: 'Error suggesting category', category: 'Other' });
+  }
+});
+
 // GET /api/transactions - Get all transactions for logged-in user
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
-    console.log('📊 Fetching transactions for user:', req.userId);
+    console.log('Fetching transactions for user:', req.userId);
     const { category, startDate, endDate } = req.query;
     
-    // Build filter query
     const filter: any = { userId: req.userId };
     
     if (category) {
@@ -27,11 +46,11 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     }
 
     const transactions = await Transaction.find(filter).sort({ date: -1 });
-    console.log(`✅ Found ${transactions.length} transactions`);
+    console.log(`Found ${transactions.length} transactions`);
     
     res.json(transactions);
   } catch (error: any) {
-    console.error('❌ Error fetching transactions:', error);
+    console.error('Error fetching transactions:', error);
     res.status(500).json({ error: 'Error fetching transactions' });
   }
 });
@@ -40,8 +59,6 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 router.post('/', async (req: AuthRequest, res: Response) => {
   try {
     console.log('➕ Creating transaction for user:', req.userId);
-    console.log('📝 Transaction data:', req.body);
-    
     const { type, amount, category, description, date } = req.body;
 
     // Validation
@@ -63,19 +80,18 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     });
 
     await transaction.save();
-    console.log('✅ Transaction created successfully:', transaction._id);
+    console.log('Transaction created successfully');
     
     res.status(201).json(transaction);
   } catch (error: any) {
-    console.error('❌ Error creating transaction:', error);
+    console.error('Error creating transaction:', error);
     res.status(500).json({ error: 'Error creating transaction' });
   }
 });
 
-// GET /api/transactions/stats/summary - Get summary statistics (MUST BE BEFORE /:id route)
+// GET /api/transactions/stats/summary - Get summary statistics
 router.get('/stats/summary', async (req: AuthRequest, res: Response) => {
   try {
-    console.log('📈 Fetching summary for user:', req.userId);
     const transactions = await Transaction.find({ userId: req.userId });
 
     const summary = {
@@ -94,11 +110,10 @@ router.get('/stats/summary', async (req: AuthRequest, res: Response) => {
     });
 
     summary.balance = summary.totalIncome - summary.totalExpense;
-    console.log('✅ Summary calculated:', summary);
 
     res.json(summary);
   } catch (error: any) {
-    console.error('❌ Error fetching summary:', error);
+    console.error('Error fetching summary:', error);
     res.status(500).json({ error: 'Error fetching summary' });
   }
 });
@@ -108,7 +123,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const transaction = await Transaction.findOne({
       _id: req.params.id,
-      userId: req.userId, // Ensure user owns this transaction
+      userId: req.userId,
     });
 
     if (!transaction) {
@@ -117,7 +132,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
     res.json(transaction);
   } catch (error: any) {
-    console.error('❌ Error fetching transaction:', error);
+    console.error('Error fetching transaction:', error);
     res.status(500).json({ error: 'Error fetching transaction' });
   }
 });
@@ -125,7 +140,6 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 // PUT /api/transactions/:id - Update transaction
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    console.log('✏️ Updating transaction:', req.params.id);
     const { type, amount, category, description, date } = req.body;
 
     const transaction = await Transaction.findOneAndUpdate(
@@ -138,10 +152,9 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Transaction not found' });
     }
 
-    console.log('✅ Transaction updated successfully');
     res.json(transaction);
   } catch (error: any) {
-    console.error('❌ Error updating transaction:', error);
+    console.error('Error updating transaction:', error);
     res.status(500).json({ error: 'Error updating transaction' });
   }
 });
@@ -149,7 +162,6 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 // DELETE /api/transactions/:id - Delete transaction
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    console.log('🗑️ Deleting transaction:', req.params.id);
     const transaction = await Transaction.findOneAndDelete({
       _id: req.params.id,
       userId: req.userId,
@@ -159,10 +171,9 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Transaction not found' });
     }
 
-    console.log('✅ Transaction deleted successfully');
     res.json({ message: 'Transaction deleted successfully' });
   } catch (error: any) {
-    console.error('❌ Error deleting transaction:', error);
+    console.error(' Error deleting transaction:', error);
     res.status(500).json({ error: 'Error deleting transaction' });
   }
 });

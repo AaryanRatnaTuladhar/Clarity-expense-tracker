@@ -63,6 +63,21 @@ export const transactionAPI = {
     const response = await api.get<Summary>('/transactions/stats/summary');
     return response.data;
   },
+
+  // NEW: AI suggest category
+  suggestCategory: async (description: string, amount: number, type: 'income' | 'expense'): Promise<string> => {
+    try {
+      const response = await api.post<{ category: string }>('/transactions/suggest-category', {
+        description,
+        amount,
+        type,
+      });
+      return response.data.category;
+    } catch (error) {
+      console.error('AI categorization failed, using fallback');
+      return 'Other';
+    }
+  },
 };
 
 export default api;

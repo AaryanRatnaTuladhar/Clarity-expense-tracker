@@ -17,7 +17,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onClose 
     date: new Date().toISOString().split('T')[0],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [error, setError] = useState('');
+  const [aiSuggestion, setAiSuggestion] = useState<string>('');
 
   useEffect(() => {
     if (transaction) {
@@ -30,6 +32,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onClose 
       });
     }
   }, [transaction]);
+
+  // AI auto-categorization when description changes
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (formData.description && formData.description.length > 3 && !formData.category) {
+        setIsAiLoading(true);
+        try {
+          const suggested = await transactionAPI.suggestCategory(
+            formData.description,
+            formData.amount,
+            formData.type
+          );
+          setAiSuggestion(suggested);
+          setFormData({ ...formData, category: suggested });
+        } catch (error) {
+          console.error('AI suggestion failed');
+        } finally {
+          setIsAiLoading(false);
+        }
+      }
+    }, 800); // Wait 800ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [formData.description, formData.type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +118,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onClose 
           </div>
 
           <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <input
+              type="text"
+              id="description"
+              value={formData.description}
+              onChange={(e) => {
+                setFormData({ ...formData, description: e.target.value });
+                setAiSuggestion('');
+              }}
+              placeholder="e.g., Starbucks coffee, Uber ride"
+            />
+            {isAiLoading && (
+              <small style={{ color: 'var(--primary)', marginTop: '4px', display: 'block' }}>
+                🤖 AI is analyzing...
+              </small>
+            )}
+            {aiSuggestion && (
+              <small style={{ color: 'var(--success)', marginTop: '4px', display: 'block' }}>
+                ✨ AI suggested: {aiSuggestion}
+              </small>
+            )}
+          </div>
+
+          <div className="form-group">
             <label htmlFor="amount">Amount</label>
             <input
               type="number"
@@ -119,17 +169,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onClose 
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <input
-              type="text"
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Optional"
-            />
           </div>
 
           <div className="form-group">
