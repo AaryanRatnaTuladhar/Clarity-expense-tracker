@@ -1,215 +1,234 @@
 .transaction-list {
-  background: white;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
 }
 
-.transaction-list h2 {
-  margin-bottom: 24px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.transactions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.transaction-item {
+.list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border: 2px solid var(--border-light);
-  border-radius: 12px;
-  transition: var(--transition);
-  gap: 20px;
-  background: white;
-  position: relative;
-  overflow: hidden;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
 }
 
-.transaction-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 5px;
-  transition: var(--transition);
+.list-header h2 {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.transaction-item.income::before {
-  background: linear-gradient(180deg, var(--success) 0%, #34d399 100%);
+.list-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  background-color: var(--surface);
+  padding: 3px 10px;
+  border: 1px solid var(--border);
 }
 
-.transaction-item.expense::before {
-  background: linear-gradient(180deg, var(--danger) 0%, #f87171 100%);
+/* ─── COLUMN HEADERS ─── */
+.list-columns {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 120px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-secondary);
+}
+
+.col-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.col-label.right {
+  text-align: right;
+}
+
+/* ─── TRANSACTION ITEMS ─── */
+.transactions {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 120px;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--divider);
+  transition: background-color var(--transition);
+  cursor: default;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
 }
 
 .transaction-item:hover {
-  transform: translateX(4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-light);
+  background-color: var(--bg-hover);
 }
 
+.transaction-item:hover .action-buttons {
+  opacity: 1;
+}
+
+/* ─── TRANSACTION INFO ─── */
 .transaction-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.transaction-header {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding-right: 16px;
 }
 
 .category {
-  font-weight: 700;
-  color: var(--text-primary);
-  font-size: 1.05rem;
-}
-
-.date {
-  color: var(--text-tertiary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.date::before {
-  content: '📅';
-  font-size: 0.875rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .description {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin: 4px 0 0 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  font-style: italic;
 }
 
-.transaction-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
+/* ─── DATE ─── */
+.date {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
+/* ─── AMOUNT ─── */
 .amount {
-  font-size: 1.5rem;
-  font-weight: 800;
-  white-space: nowrap;
-  letter-spacing: -0.02em;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-align: right;
 }
 
-.amount.income {
-  color: var(--success);
-}
+.amount.income { color: var(--income); }
+.amount.expense { color: var(--expense); }
 
-.amount.expense {
-  color: var(--danger);
-}
-
+/* ─── ACTION BUTTONS ─── */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  justify-content: flex-end;
+  opacity: 0;
+  transition: opacity var(--transition);
 }
 
 .btn-edit,
 .btn-delete {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: var(--transition);
-}
-
-.btn-edit {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
+  transition: all var(--transition);
+  color: var(--text-muted);
 }
 
 .btn-edit:hover {
-  background-color: var(--primary);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-delete {
-  background-color: var(--danger-light);
-  color: var(--danger);
+  border-color: var(--text);
+  color: var(--text);
+  background-color: var(--bg-hover);
 }
 
 .btn-delete:hover {
-  background-color: var(--danger);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--expense);
+  color: var(--expense);
+  background-color: var(--expense-bg);
 }
 
+/* ─── EMPTY STATE ─── */
 .empty-state {
+  padding: 80px 24px;
   text-align: center;
-  padding: 64px 24px;
-  color: var(--text-secondary);
+  border-top: none;
+}
+
+.empty-state-icon {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: block;
 }
 
 .empty-state h3 {
-  margin-bottom: 12px;
-  color: var(--text-primary);
-  font-size: 1.5rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
   font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
 }
 
 .empty-state p {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
 }
 
-.empty-state::before {
-  content: '💸';
-  font-size: 4rem;
-  display: block;
-  margin-bottom: 16px;
-}
-
-@media (max-width: 640px) {
-  .transaction-list {
-    padding: 24px 20px;
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .list-columns {
+    display: none;
   }
-  
+
   .transaction-item {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 4px;
+    padding: 16px 20px;
   }
 
-  .transaction-actions {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+  .transaction-info {
+    grid-column: 1;
+    grid-row: 1;
+    padding-right: 12px;
+  }
+
+  .amount {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .date {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .action-buttons {
-    order: -1;
-  }
-  
-  .amount {
-    font-size: 1.35rem;
+    grid-column: 2;
+    grid-row: 2;
+    opacity: 1;
   }
 }

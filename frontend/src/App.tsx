@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -6,29 +6,36 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import './App.css';
 
-// Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface RouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
   const { token, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="loading">Loading...</div>;
-  }
-
+  if (isLoading) return <div className="loading">Loading</div>;
   return token ? <>{children}</> : <Navigate to="/login" />;
 };
 
-// Public Route (redirect to dashboard if already logged in)
-const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PublicRoute: React.FC<RouteProps> = ({ children }) => {
   const { token, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div className="loading">Loading...</div>;
-  }
-
+  if (isLoading) return <div className="loading">Loading</div>;
   return token ? <Navigate to="/dashboard" /> : <>{children}</>;
 };
 
 function AppRoutes() {
+  // Dark mode — default to dark (financial apps feel premium in dark)
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem('clarity-theme');
+    return stored ? stored === 'dark' : true; // default dark
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('clarity-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(prev => !prev);
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -36,7 +43,7 @@ function AppRoutes() {
         path="/login"
         element={
           <PublicRoute>
-            <Login />
+            <Login onThemeToggle={toggleTheme} isDark={isDark} />
           </PublicRoute>
         }
       />
@@ -44,7 +51,7 @@ function AppRoutes() {
         path="/signup"
         element={
           <PublicRoute>
-            <Signup />
+            <Signup onThemeToggle={toggleTheme} isDark={isDark} />
           </PublicRoute>
         }
       />
@@ -52,7 +59,7 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Dashboard onThemeToggle={toggleTheme} isDark={isDark} />
           </ProtectedRoute>
         }
       />

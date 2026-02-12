@@ -6,7 +6,12 @@ import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import '../styles/Dashboard.css';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onThemeToggle: () => void;
+  isDark: boolean;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ onThemeToggle, isDark }) => {
   const { user, logout } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<Summary>({
@@ -41,7 +46,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
+    if (window.confirm('Delete this transaction?')) {
       try {
         await transactionAPI.delete(id);
         loadData();
@@ -63,62 +68,85 @@ const Dashboard: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">Loading</div>;
   }
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
 
   return (
     <div className="dashboard">
+      {/* Header */}
       <header className="dashboard-header">
-        <div>
-          <h1>Welcome back, {user?.name}!</h1>
-          <p>Here's your financial overview</p>
+        <div className="header-brand">
+          <span className="brand-name">Clarity</span>
+          <span className="brand-sub">Personal Finance</span>
         </div>
-        <button onClick={logout} className="btn-secondary">
-          Logout
-        </button>
+        <div className="header-right">
+          <span className="header-user">{user?.name}</span>
+          <button className="theme-toggle" onClick={onThemeToggle} title="Toggle theme">
+            {isDark ? '○' : '●'}
+          </button>
+          <button className="btn-logout" onClick={logout}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       {/* Summary Cards */}
-      <div className="summary-cards">
-        <div className="card income">
-          <h3>Total Income</h3>
-          <p className="amount">${summary.totalIncome.toFixed(2)}</p>
-        </div>
-        <div className="card expense">
-          <h3>Total Expenses</h3>
-          <p className="amount">${summary.totalExpense.toFixed(2)}</p>
-        </div>
-        <div className="card balance">
-          <h3>Balance</h3>
-          <p className="amount">${summary.balance.toFixed(2)}</p>
+      <div className="summary-section">
+        <span className="section-label">Overview</span>
+        <div className="summary-cards">
+          <div className="card income">
+            <span className="card-badge">Income</span>
+            <h3>Total inflow</h3>
+            <p className="amount">{formatAmount(summary.totalIncome)}</p>
+          </div>
+          <div className="card expense">
+            <span className="card-badge">Expense</span>
+            <h3>Total outflow</h3>
+            <p className="amount">{formatAmount(summary.totalExpense)}</p>
+          </div>
+          <div className="card balance">
+            <span className="card-badge">{summary.balance >= 0 ? 'Surplus' : 'Deficit'}</span>
+            <h3>Net balance</h3>
+            <p className="amount">{formatAmount(summary.balance)}</p>
+          </div>
         </div>
       </div>
 
       {/* Actions */}
       <div className="actions">
-        <button onClick={() => setShowForm(true)} className="btn-primary">
-          + Add Transaction
-        </button>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="filter-select"
-        >
-          <option value="">All Categories</option>
-          <option value="Food & Dining">Food & Dining</option>
-          <option value="Transportation">Transportation</option>
-          <option value="Shopping">Shopping</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Bills & Utilities">Bills & Utilities</option>
-          <option value="Healthcare">Healthcare</option>
-          <option value="Salary">Salary</option>
-          <option value="Freelance">Freelance</option>
-          <option value="Investments">Investments</option>
-          <option value="Other">Other</option>
-        </select>
+        <div className="actions-left">
+          <button onClick={() => setShowForm(true)} className="btn-primary">
+            + New transaction
+          </button>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">All categories</option>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Bills & Utilities">Bills & Utilities</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Salary">Salary</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Investments">Investments</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
       </div>
 
-      {/* Transaction Form Modal */}
+      {/* Transaction Form */}
       {showForm && (
         <TransactionForm
           transaction={editingTransaction}

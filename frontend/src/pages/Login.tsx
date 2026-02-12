@@ -3,7 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
 
-const Login: React.FC = () => {
+interface LoginProps {
+  onThemeToggle: () => void;
+  isDark: boolean;
+}
+
+const Login: React.FC<LoginProps> = ({ onThemeToggle, isDark }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +21,6 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       await login(email, password);
       navigate('/dashboard');
@@ -30,21 +34,28 @@ const Login: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Welcome to Clarity</h1>
-        <p className="subtitle">Track your expenses with clarity</p>
+        <button className="auth-theme-toggle" onClick={onThemeToggle}>
+          {isDark ? '○' : '●'}
+        </button>
+
+        <div className="auth-logo">Clarity</div>
+
+        <h1>Sign in</h1>
+        <p className="subtitle">Track every dollar. Know your position.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="you@example.com"
               required
+              autoComplete="email"
             />
           </div>
 
@@ -55,18 +66,19 @@ const Login: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="••••••••"
               required
+              autoComplete="current-password"
             />
           </div>
 
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Authenticating...' : 'Sign in →'}
           </button>
         </form>
 
         <p className="auth-footer">
-          Don't have an account? <Link to="/signup">Sign up</Link>
+          No account? <Link to="/signup">Create one</Link>
         </p>
       </div>
     </div>

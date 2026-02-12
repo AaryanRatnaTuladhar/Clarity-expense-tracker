@@ -3,7 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Auth.css';
 
-const Signup: React.FC = () => {
+interface SignupProps {
+  onThemeToggle: () => void;
+  isDark: boolean;
+}
+
+const Signup: React.FC<SignupProps> = ({ onThemeToggle, isDark }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,13 +22,11 @@ const Signup: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       setIsLoading(false);
       return;
     }
-
     try {
       await signup(email, password, name);
       navigate('/dashboard');
@@ -37,14 +40,20 @@ const Signup: React.FC = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Create Account</h1>
-        <p className="subtitle">Start tracking your expenses today</p>
+        <button className="auth-theme-toggle" onClick={onThemeToggle}>
+          {isDark ? '○' : '●'}
+        </button>
+
+        <div className="auth-logo">Clarity</div>
+
+        <h1>Create account</h1>
+        <p className="subtitle">Financial clarity starts here.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">Full name</label>
             <input
               type="text"
               id="name"
@@ -56,14 +65,15 @@ const Signup: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="you@example.com"
               required
+              autoComplete="email"
             />
           </div>
 
@@ -74,18 +84,19 @@ const Signup: React.FC = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder="Min. 6 characters"
               required
+              autoComplete="new-password"
             />
           </div>
 
           <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Sign Up'}
+            {isLoading ? 'Creating account...' : 'Create account →'}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+          Have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>
     </div>

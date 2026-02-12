@@ -42,7 +42,7 @@ export const categorizeTransaction = async (
     // Check if Gemini is configured
     const client = getGeminiClient();
     if (!client) {
-      console.log('⚠️ Gemini API key not configured, using fallback');
+      console.log('Gemini API key not configured, using fallback');
       return 'Other';
     }
 
@@ -64,10 +64,10 @@ Respond with ONLY the category name from the list above, nothing else. No explan
 
     // Validate that the suggested category is in our list
     if (categories.includes(suggestedCategory)) {
-      console.log(`🤖 AI categorized "${description}" as: ${suggestedCategory}`);
+      console.log(`AI categorized "${description}" as: ${suggestedCategory}`);
       return suggestedCategory;
     } else {
-      console.log(`⚠️ AI suggested: ${suggestedCategory}, checking for partial match...`);
+      console.log(`AI suggested: ${suggestedCategory}, checking for partial match...`);
       
       // Try to find a partial match (sometimes AI adds extra words)
       const match = categories.find(cat => 
@@ -76,15 +76,15 @@ Respond with ONLY the category name from the list above, nothing else. No explan
       );
       
       if (match) {
-        console.log(`✅ Found match: ${match}`);
+        console.log(`Found match: ${match}`);
         return match;
       }
       
-      console.log(`⚠️ Using fallback: Other`);
+      console.log(`Using fallback: Other`);
       return 'Other';
     }
   } catch (error: any) {
-    console.error('❌ AI categorization error:', error.message);
+    console.error('AI categorization error:', error.message);
     return 'Other';
   }
 };

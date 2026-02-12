@@ -58,7 +58,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 // POST /api/transactions - Create new transaction
 router.post('/', async (req: AuthRequest, res: Response) => {
   try {
-    console.log('➕ Creating transaction for user:', req.userId);
+    console.log(' Creating transaction for user:', req.userId);
     const { type, amount, category, description, date } = req.body;
 
     // Validation
