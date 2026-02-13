@@ -14,7 +14,10 @@ const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors()); // Allow cross-origin requests from React app
+app.use(cors({
+  origin: '*',
+  credentials: true,
+})); // Allow cross-origin requests from React app
 app.use(express.json()); // Parse JSON request bodies
 
 // Database connection
